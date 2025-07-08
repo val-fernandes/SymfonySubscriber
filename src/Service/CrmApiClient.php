@@ -37,7 +37,7 @@ class CrmApiClient
      */
     public function checkStatus(): array
     {
-        return []; // TODO
+        return $this->sendRequest('GET', '/');
     }
 
     /**
@@ -46,7 +46,29 @@ class CrmApiClient
      */
     private function getAPIUser(): array
     {
-        return []; // TODO
+        try {
+            return $this->sendRequest('GET', '/api/me');
+        }
+        catch (Exception $exception) {
+            return ["apiUser" => false];
+        } 
+    }
+
+    /**
+     * Check if the External API has properly setup by checking the user's Token
+     * @return bool
+     */
+    public function IsAPISetup()
+    {
+        $response = $this->getAPIUser();
+    // If the API is setup correctly, we get an array for the key "apiUser". Otherwise the
+    // function getAPIUser() will return false if there was an error.
+        if (is_array($response['apiUser'])) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     /**
@@ -70,11 +92,34 @@ class CrmApiClient
             ],
         ];
 
-        $finalOptions = array_merge($defaultOptions, $options);
+        $finalOptions = array_merge_recursive($defaultOptions, $options);
         
         $response = $this->httpClient->request($method, $url, $finalOptions);
         
         $statusCode = $response->getStatusCode();
+
+        if ($statusCode == Response::HTTP_BAD_REQUEST) {
+            // Attempt to get more detailed error from API response body
+            $errorContent = $response->toArray(false); // false = don't throw on error
+            $errorMessage = $errorContent['message'] ?? 'An unknown API error occurred.';
+                
+            if (isset($errorContent["fields"]) && count($errorContent["fields"]) > 0) {
+                foreach ($errorContent["fields"] as $errField) {
+                    $errorMessage .= PHP_EOL . "" . $errField['message'];
+                    continue;
+                }
+            }
+            throw new Exception("API Error: {$errorMessage} (Status: {$statusCode})", $statusCode);
+        }
+        elseif ($statusCode > Response::HTTP_BAD_REQUEST) {
+            $errorMessage = 'An unknown API error occurred.';
+            throw new Exception("API Error: {$errorMessage} (Status: {$statusCode})", $statusCode);
+        }
+
+        // For 204 No Content responses, return an empty array.
+        if ($statusCode === Response::HTTP_NO_CONTENT) {
+            return [];
+        }
 
         return $response->toArray();
     }
