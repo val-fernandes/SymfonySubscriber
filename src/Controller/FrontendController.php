@@ -17,19 +17,25 @@ class FrontendController extends AbstractController
     #[Route('/', name: 'app_home')]
     public function index(CrmApiClient $apiClient): Response
     {
+        $APIGreenLight = $apiClient->IsAPISetup();
         $arrData = [];
-		$arrSubscriberList = $apiClient->getSubcriberList();
-		if (!empty($arrSubscriberList) && isset($arrSubscriberList["lists"])) {
-			foreach ($arrSubscriberList["lists"] as $Subscriber) {
-			// As per specification, we only want these subscriber list. Anything else isn't allowed.
-				if (!in_array($Subscriber["name"], $this->arrAllowedSubscriberList))
-					continue;
+        if ($APIGreenLight) {
+            $arrSubscriberList = $apiClient->getSubcriberList();
+            if (!empty($arrSubscriberList) && isset($arrSubscriberList["lists"])) {
+                foreach ($arrSubscriberList["lists"] as $Subscriber) {
+                // As per specification, we only want these subscriber list. Anything else isn't allowed.
+                    if (!in_array($Subscriber["name"], $this->arrAllowedSubscriberList))
+                        continue;
 
-				$arrData["arrSubscriber"][$Subscriber["id"]] = $Subscriber["name"];
-			}
-		}
+                    $arrData["arrSubscriber"][$Subscriber["id"]] = $Subscriber["name"];
+                }
+            }
 
-		return $this->render('frontend/index.html.twig', $arrData);
+            return $this->render('frontend/index.html.twig', $arrData);
+        }
+        else {
+            return $this->render('error/apierror.html.twig');
+        }
     }
 
     #[Route('/enquiry', name: 'app_enquiry')]
