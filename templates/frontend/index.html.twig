@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Subscriber submission</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .EnquiryLink { color: crimson; }
+    </style>
 </head>
 <body class="bg-gray-50">
 
@@ -67,6 +70,114 @@
             </form>
         </div>
     </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    // Get the form element, so we can add submit functionality to it.
+        const form = document.getElementById('subcriber-form');
+    // Best practice: We don't want the user to trigger submit multi-times.
+        const submitButton = document.getElementById('submit-btn');
+
+
+
+// START - Helper functions/Events.
+    // On submit, inform the user on success or failure case.
+        const responseMessageContainer = document.getElementById('response-message');
+    // The subcriber list should only be made available if the marketing consent is ticked.
+        const listGroup = document.getElementById('list-group');
+    // Get the marking consent element to check if the user has ticked or not.
+        const marketingConsentCheckbox = document.getElementById('marketing-consent');
+        marketingConsentCheckbox.addEventListener('change', function () {
+            if (this.checked) {
+                listGroup.disabled = false;
+                listGroup.classList.remove('list-group-disabled');
+            } else {
+                listGroup.disabled = true;
+                listGroup.classList.add('list-group-disabled');
+                listGroup
+                    .querySelectorAll('input[type="checkbox"]')
+                    .forEach(cb => cb.checked = false); // un-tick subscriber list if marketing consent is unticked.
+            }
+        });
+
+        function showMessage(message, type = 'success', route) {
+            responseMessageContainer.innerHTML  = message;
+            responseMessageContainer.className = 'rounded-md p-4 block';
+            if (type === 'success') {
+                responseMessageContainer.classList.add('bg-green-100', 'text-green-800');
+            } else {
+                responseMessageContainer.classList.add('bg-red-100', 'text-red-800');
+            }
+        }
+
+        function hideMessage() {
+            responseMessageContainer.classList.add('hidden');
+            responseMessageContainer.textContent = '';
+        }
+
+// END - Helper functions/Events.
+
+// Form handler.
+        form.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            submitButton.disabled = true;
+            submitButton.textContent = 'Submitting...';
+            hideMessage();
+
+        // Use the JS FormData Object. To set the subscriber form field so it can be used to
+        // easily extract each field value.
+            const formData = new FormData(form);
+            const selectedLists = Array.from(formData.getAll('lists'));
+
+            const payload = {
+                email: formData.get('email'),
+                firstName: formData.get('first-name'),
+                lastName: formData.get('last-name'),
+                dob: formData.get('dob'),
+                marketingConsent: formData.get('marketing-consent') === 'on',
+                lists: selectedLists
+            };
+
+            let route = "";
+            try {
+                const response = await fetch('/api/signup-subscriber', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || 'An unknown error occurred.');
+                }
+
+                route = "{{ path('app_enquiry', { subscriberId: 'fileId_' }) }}";
+                route = route.replace('fileId_', result.subscriberId);
+
+                let successMessage = result.message
+                            + '<br /><a class="EnquiryLink" href="'
+                            + route
+                            + '">Enquiry form</a>';
+                showMessage(successMessage, 'success', route);
+                
+                form.reset();
+
+                marketingConsentCheckbox.dispatchEvent(new Event('change'));
+
+                form.style.visibility = "hidden";
+            } catch (error) {
+                showMessage(error.message, 'error', route);
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Submit Enquiry';
+            }
+        });
+    });
+</script>
 
 </body>
 </html>

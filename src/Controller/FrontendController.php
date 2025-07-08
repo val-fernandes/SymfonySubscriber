@@ -33,8 +33,16 @@ class FrontendController extends AbstractController
     }
 
     #[Route('/enquiry', name: 'app_enquiry')]
-    public function enquiry(): Response
-	{
-        return $this->render('frontend/enquiry.html.twig');
+    public function enquiry(   
+        #[MapQueryParameter] string $subscriberId,
+        CrmApiClient $apiClient
+        ): Response
+    {
+        $arrData = [];
+
+        if (!empty($subscriberId))
+            $arrData["subscriberId"] = $subscriberId;
+
+        return $this->render('frontend/enquiry.html.twig', $arrData);
     }
 }

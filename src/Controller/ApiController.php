@@ -29,9 +29,28 @@ class ApiController extends AbstractController
     #[Route('/api/signup-subscriber', name: 'api_signup_subscriber', methods: ['POST'])]
     public function handleSubmission(Request $request, CrmApiClient $apiClient): JsonResponse
     {
+		$data = $request->toArray();
+
+		$this->validateInput($data);
+
+		$subscriberResponse = $apiClient->createSubscriber([
+			'email_address' => $data['email'],
+			'first_name' => $data['firstName'] ?? null,
+			'last_name' => $data['lastName'] ?? null,
+			'date_of_birth' => $data['dob'],
+			'marketing_consent' => $data['marketingConsent'],
+			'lists' => $data['lists'],
+		]);
+
+		if (!isset($subscriberResponse['subscriber']['id'])) {
+			throw new Exception('Failed to create subscriber: API did not return an ID.');
+		}
+		$subscriberId = $subscriberResponse['subscriber']['id'];
+
 		return new JsonResponse([
 				'status' => 'success',
 				'message' => 'Subscription created successfully.',
+				'subscriberId' => $subscriberId,
 			],
 			JsonResponse::HTTP_CREATED);
 	}

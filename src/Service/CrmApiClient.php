@@ -83,6 +83,24 @@ class CrmApiClient
     }
 
     /**
+     * Creates a new subscriber.
+     *
+     */
+    public function createSubscriber(array $data): array
+    {
+        return $this->sendRequest('POST', '/api/subscriber', [
+            'json' => [
+                'emailAddress' => $data['email_address'],
+                'firstName' => $data['first_name'] ?? null,
+                'lastName' => $data['last_name'] ?? null,
+                'dateOfBirth' => $data['date_of_birth'] ?? null,
+                'marketingConsent' => $data['marketing_consent'],
+                'lists' => $data['lists'],
+            ],
+        ]);
+    }
+
+    /**
      * A helper method to send requests to the API.
      *
      * @param string $method The HTTP method (GET, POST, PUT, etc.).

@@ -15,6 +15,7 @@
             <div id="response-message" class="rounded-md p-4 hidden" role="alert"></div>
 
             <form id="enquiry-form" action="#" method="POST">
+                <input type="hidden" name="subscriberId" value="{{ subscriberId }}">
                 <div>
                     <label for="message" class="form-label">Message <span class="text-red-500">*</span></label>
                     <textarea id="message" name="message" rows="4" required class="bg-gray-50 border border-gray-300"></textarea>
