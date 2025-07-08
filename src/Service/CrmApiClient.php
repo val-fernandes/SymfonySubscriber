@@ -71,6 +71,17 @@ class CrmApiClient
         }
     }
 
+    //////////////
+    // Ideally we want to make sure the API is working before making the call to all of the below functions.
+    //////////////
+
+    /**
+     * Get all the subscriber list.
+     */
+    public function getSubcriberList() {
+        return $this->sendRequest('GET', '/api/lists');
+    }
+
     /**
      * A helper method to send requests to the API.
      *

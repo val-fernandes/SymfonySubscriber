@@ -10,11 +10,26 @@ use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 
 class FrontendController extends AbstractController
 {
+    var $arrAllowedSubscriberList = ["London", "Birmingham", "Edinburgh"];
+
+
 
     #[Route('/', name: 'app_home')]
-    public function index(): Response
+    public function index(CrmApiClient $apiClient): Response
     {
-		return $this->render('frontend/index.html.twig');
+        $arrData = [];
+		$arrSubscriberList = $apiClient->getSubcriberList();
+		if (!empty($arrSubscriberList) && isset($arrSubscriberList["lists"])) {
+			foreach ($arrSubscriberList["lists"] as $Subscriber) {
+			// As per specification, we only want these subscriber list. Anything else isn't allowed.
+				if (!in_array($Subscriber["name"], $this->arrAllowedSubscriberList))
+					continue;
+
+				$arrData["arrSubscriber"][$Subscriber["id"]] = $Subscriber["name"];
+			}
+		}
+
+		return $this->render('frontend/index.html.twig', $arrData);
     }
 
     #[Route('/enquiry', name: 'app_enquiry')]
