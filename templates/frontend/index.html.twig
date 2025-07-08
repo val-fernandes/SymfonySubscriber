@@ -8,5 +8,65 @@
 </head>
 <body class="bg-gray-50">
 
+    <div class="flex justify-center">
+        <div>
+            <h2 class="text-center font-extrabold ">Subcriber</h2>
+
+            <div id="response-message" class="rounded-md p-4 hidden" role="alert"></div>
+
+            <form id="subcriber-form" action="#" method="POST">
+                <div>
+                    <h3>Your Details</h3>
+                    <div>
+                        <label for="email">Email address <span class="text-red-500">*</span></label>
+                        <input id="email" name="email" type="email" autocomplete="email" required class="bg-gray-50 border border-gray-300">
+                    </div>
+                    <div>
+                        <label for="first-name">First name</label>
+                        <input type="text" name="first-name" id="first-name" autocomplete="given-name" class="bg-gray-50 border border-gray-300">
+                    </div>
+                    <div>
+                        <label for="last-name">Last name</label>
+                        <input type="text" name="last-name" id="last-name" autocomplete="family-name" class="bg-gray-50 border border-gray-300">
+                    </div>
+                    <div>
+                        <label for="dob">Date of Birth <span class="text-red-500">*</span></label>
+                        <input type="date" name="dob" id="dob" required class="bg-gray-50 border border-gray-300">
+                        <p class="mt-1 text-xs text-gray-500">You must be at least 18 years old.</p>
+                    </div>
+
+                    <div class="border border-gray-200">
+                        <h3 class="font-bold">Marketing Preferences</h3>
+                        <div>
+                            <div>
+                                <input id="marketing-consent" name="marketing-consent" type="checkbox">
+                                <label for="marketing-consent" class="font-medium">I would like to receive marketing updates.</label>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">Select which newsletters you'd like to receive below.</p>
+                            </div>
+                        </div>
+
+                        <fieldset id="list-group" class="list-group-disabled" disabled>
+                            {% for SubID, SubName in arrSubscriber %}
+                                <div>
+                                    <input id="list-{{ SubName|e }}" value="{{ SubID }}" name="lists" type="checkbox">
+                                    <label for="list-{{ SubName|e }}">{{ SubName|e }}</label>
+                                </div>
+                            {% endfor%}
+                        </fieldset>
+                    </div>
+                </div>
+
+                <div>
+                    <button type="submit" id="submit-btn"
+                        class="text-white bg-blue-700 rounded-lg font-medium px-5 py-2.5">
+                        Subscriber
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </body>
 </html>

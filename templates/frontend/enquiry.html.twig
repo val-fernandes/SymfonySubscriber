@@ -8,5 +8,27 @@
 </head>
 <body class="bg-gray-50">
 
+    <div class="flex justify-center">
+        <div>
+            <h2 class="text-center font-extrabold ">Your Enquiry</h2>
+
+            <div id="response-message" class="rounded-md p-4 hidden" role="alert"></div>
+
+            <form id="enquiry-form" action="#" method="POST">
+                <div>
+                    <label for="message" class="form-label">Message <span class="text-red-500">*</span></label>
+                    <textarea id="message" name="message" rows="4" required class="bg-gray-50 border border-gray-300"></textarea>
+                </div>
+
+                <div>
+                    <button type="submit" id="submit-btn"
+                        class="text-white bg-blue-700 rounded-lg font-medium px-5 py-2.5">
+                        Submit Enquiry
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </body>
 </html>
