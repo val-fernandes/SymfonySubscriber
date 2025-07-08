@@ -18,6 +18,20 @@ class ApiController extends AbstractController
     #[Route('/api/user-enquiry', name: 'api_send_enquiry', methods: ['POST'])]
     public function sendEnquiry(Request $request, CrmApiClient $apiClient): JsonResponse
     {
+		$data = $request->toArray();
+
+		$this->validateEnquiryInput($data, $apiClient);
+
+		$enquiryResponse = $apiClient->createEnquiry(
+					$data['subscriberId'],
+					$data['message']
+				);
+
+		if (!isset($enquiryResponse['subscriber']['id'])) {
+			throw new Exception('Failed to create enquiry: API did not return an ID.');
+		}
+		$subscriberId = $enquiryResponse['subscriber']['id'];
+
 		return new JsonResponse([
 				'status' => 'success',
 				'message' => 'Your enquiry has been submitted successfully.',
@@ -82,5 +96,21 @@ class ApiController extends AbstractController
         } catch (Exception $e) {
             throw new Exception('Invalid date of birth provided or age requirement not met.', JsonResponse::HTTP_BAD_REQUEST);
         }
+    }
+
+    /**
+     * Validates the incoming request data.
+     *
+     */
+    private function validateEnquiryInput(array $data, CrmApiClient $apiClient): void
+    {
+        if (empty($data['subscriberId'])) {
+            throw new Exception('Subscriber Id is mandatory.', JsonResponse::HTTP_BAD_REQUEST);
+        }
+    
+        if (empty($data['message'])) {
+            throw new Exception('The enquiry message cannot be empty.', JsonResponse::HTTP_BAD_REQUEST);
+        }
+
     }
 }

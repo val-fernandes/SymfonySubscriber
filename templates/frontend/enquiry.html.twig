@@ -31,5 +31,78 @@
         </div>
     </div>
 
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    // Get the form element, so we can add submit functionality to it.
+        const form = document.getElementById('enquiry-form');
+    // Best practice: We don't want the user to trigger submit multi-times.
+        const submitButton = document.getElementById('submit-btn');
+    // On submit, inform the user on success or failure case.
+        const responseMessageContainer = document.getElementById('response-message');
+
+// START - Helper functions/Events.
+        function showMessage(message, type = 'success') {
+            responseMessageContainer.textContent = message;
+            responseMessageContainer.className = 'rounded-md p-4 block';
+            if (type === 'success') {
+                responseMessageContainer.classList.add('bg-green-100', 'text-green-800');
+            } else {
+                responseMessageContainer.classList.add('bg-red-100', 'text-red-800');
+            }
+        }
+
+        function hideMessage() {
+            responseMessageContainer.classList.add('hidden');
+            responseMessageContainer.textContent = '';
+        }
+
+// END - Helper functions/Events.
+
+// Form handler.
+        form.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            submitButton.disabled = true;
+            submitButton.textContent = 'Submitting...';
+            hideMessage();
+
+        // Use the JS FormData Object. To set the subscriber form field so it can be used to
+        // easily extract each field value.
+            const formData = new FormData(form);
+
+            const payload = {
+                subscriberId: formData.get('subscriberId'),
+                message: formData.get('message')
+            };
+
+            try {
+                const response = await fetch('/api/user-enquiry', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || 'An unknown error occurred.');
+                }
+
+                showMessage(result.message, 'success');
+                form.reset();
+                form.style.visibility = "hidden";
+            } catch (error) {
+                showMessage(error.message, 'error');
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Submit Enquiry';
+            }
+        });
+    });
+</script>
+
 </body>
 </html>

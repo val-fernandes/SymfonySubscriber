@@ -101,6 +101,20 @@ class CrmApiClient
     }
 
     /**
+     * Creates a new enquiry linked to a subscriber.
+     *
+     */
+    public function createEnquiry(string $subscriberId, string $message): array
+    {
+        return $this->sendRequest('POST', 
+            '/api/subscriber/' . $subscriberId . '/enquiry', [
+            'json' => [
+                'message' => $message,
+            ],
+        ]);
+    }
+
+    /**
      * A helper method to send requests to the API.
      *
      * @param string $method The HTTP method (GET, POST, PUT, etc.).
