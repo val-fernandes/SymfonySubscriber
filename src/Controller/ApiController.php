@@ -18,26 +18,39 @@ class ApiController extends AbstractController
     #[Route('/api/user-enquiry', name: 'api_send_enquiry', methods: ['POST'])]
     public function sendEnquiry(Request $request, CrmApiClient $apiClient): JsonResponse
     {
-		$data = $request->toArray();
+        try {
+            $data = $request->toArray();
 
-		$this->validateEnquiryInput($data, $apiClient);
+            $this->validateEnquiryInput($data, $apiClient);
 
-		$enquiryResponse = $apiClient->createEnquiry(
-					$data['subscriberId'],
-					$data['message']
-				);
+            $enquiryResponse = $apiClient->createEnquiry(
+                        $data['subscriberId'],
+                        $data['message']
+                    );
 
-		if (!isset($enquiryResponse['subscriber']['id'])) {
-			throw new Exception('Failed to create enquiry: API did not return an ID.');
-		}
-		$subscriberId = $enquiryResponse['subscriber']['id'];
+            if (!isset($enquiryResponse['subscriber']['id'])) {
+                throw new Exception('Failed to create enquiry: API did not return an ID.');
+            }
+            $subscriberId = $enquiryResponse['subscriber']['id'];
 
-		return new JsonResponse([
-				'status' => 'success',
-				'message' => 'Your enquiry has been submitted successfully.',
-			],
-			JsonResponse::HTTP_CREATED);
-	}
+            return new JsonResponse([
+                    'status' => 'success',
+                    'message' => 'Your enquiry has been submitted successfully.',
+                ],
+                JsonResponse::HTTP_CREATED);
+
+        } catch (\JsonException $e) {
+            return new JsonResponse([
+                    'status' => 'error', 
+                    'message' => 'Invalid JSON payload.'
+            ], JsonResponse::HTTP_BAD_REQUEST);
+        } catch (Exception $e) {
+            return new JsonResponse([
+                    'status' => 'error',
+                    'message' => $e->getMessage()
+                ], $e->getCode() ?: JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
 
     /**
      * Handle the subscriber submission.
@@ -45,31 +58,44 @@ class ApiController extends AbstractController
     #[Route('/api/signup-subscriber', name: 'api_signup_subscriber', methods: ['POST'])]
     public function handleSubmission(Request $request, CrmApiClient $apiClient): JsonResponse
     {
-		$data = $request->toArray();
+        try {
+            $data = $request->toArray();
 
-		$this->validateInput($data);
+            $this->validateInput($data);
 
-		$subscriberResponse = $apiClient->createSubscriber([
-			'email_address' => $data['email'],
-			'first_name' => $data['firstName'] ?? null,
-			'last_name' => $data['lastName'] ?? null,
-			'date_of_birth' => $data['dob'],
-			'marketing_consent' => $data['marketingConsent'],
-			'lists' => $data['lists'],
-		]);
+            $subscriberResponse = $apiClient->createSubscriber([
+                'email_address' => $data['email'],
+                'first_name' => $data['firstName'] ?? null,
+                'last_name' => $data['lastName'] ?? null,
+                'date_of_birth' => $data['dob'],
+                'marketing_consent' => $data['marketingConsent'],
+                'lists' => $data['lists'],
+            ]);
 
-		if (!isset($subscriberResponse['subscriber']['id'])) {
-			throw new Exception('Failed to create subscriber: API did not return an ID.');
-		}
-		$subscriberId = $subscriberResponse['subscriber']['id'];
+            if (!isset($subscriberResponse['subscriber']['id'])) {
+                throw new Exception('Failed to create subscriber: API did not return an ID.');
+            }
+            $subscriberId = $subscriberResponse['subscriber']['id'];
 
-		return new JsonResponse([
-				'status' => 'success',
-				'message' => 'Subscription created successfully.',
-				'subscriberId' => $subscriberId,
-			],
-			JsonResponse::HTTP_CREATED);
-	}
+            return new JsonResponse([
+                    'status' => 'success',
+                    'message' => 'Subscription created successfully.',
+                    'subscriberId' => $subscriberId,
+                ],
+                JsonResponse::HTTP_CREATED);
+
+        } catch (\JsonException $e) {
+            return new JsonResponse([
+                    'status' => 'error', 
+                    'message' => 'Invalid JSON payload.'
+                ], JsonResponse::HTTP_BAD_REQUEST);
+        } catch (Exception $e) {
+            return new JsonResponse([
+                    'status' => 'error',
+                    'message' => $e->getMessage()
+                ], $e->getCode() ?: JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
 
     /**
      * Validates the incoming request data.
