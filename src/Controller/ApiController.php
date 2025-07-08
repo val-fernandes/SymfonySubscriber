@@ -7,6 +7,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use Exception;
+use DateTime;
 
 class ApiController extends AbstractController
 {
@@ -54,4 +56,31 @@ class ApiController extends AbstractController
 			],
 			JsonResponse::HTTP_CREATED);
 	}
+
+    /**
+     * Validates the incoming request data.
+     *
+     */
+    private function validateInput(array $data): void
+    {
+        if (empty($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+            throw new Exception('A valid email address is mandatory.', JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        if (empty($data['dob'])) {
+            throw new Exception('Date of birth is mandatory.', JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $birthDate = new DateTime($data['dob']);
+            $today = new DateTime();
+            $age = $today->diff($birthDate)->y;
+
+            if ($age < 18) {
+                throw new Exception('You must be at least 18 years old to subscribe.', JsonResponse::HTTP_BAD_REQUEST);
+            }
+        } catch (Exception $e) {
+            throw new Exception('Invalid date of birth provided or age requirement not met.', JsonResponse::HTTP_BAD_REQUEST);
+        }
+    }
 }
